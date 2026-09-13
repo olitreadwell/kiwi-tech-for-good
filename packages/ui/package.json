@@ -23,11 +23,11 @@
     "@olitreadwell/config-typescript": "*",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "react": "^19.0.0",
+    "react": "^19.3.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.3.0"
   }
 }
