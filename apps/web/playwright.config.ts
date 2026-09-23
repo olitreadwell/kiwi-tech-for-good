@@ -1,5 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// The e2e run boots its own dev server, and it has to be a port nothing else
+// holds: 3000 is usually taken, and Playwright reuses a server that is already
+// answering there, which would test the wrong app. E2E_PORT moves the port for
+// callers that need a different one.
+const e2ePort = process.env.E2E_PORT ?? "3301";
+const e2eBaseUrl = `http://localhost:${e2ePort}`;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -8,7 +15,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3000/kiwi-tech-for-good",
+    baseURL: e2eBaseUrl,
     trace: "on-first-retry",
   },
   projects: [
@@ -17,8 +24,8 @@ export default defineConfig({
     { name: "mobile-chrome", use: { ...devices["Pixel 5"] } },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: `npm run dev -- -p ${e2ePort}`,
+    url: e2eBaseUrl,
     reuseExistingServer: !process.env.CI,
   },
 });
