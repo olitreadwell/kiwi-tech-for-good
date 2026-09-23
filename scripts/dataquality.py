@@ -3,16 +3,16 @@
 
 Runs fully offline (no network calls). Checks:
 
-  DUPLICATES (fatal — exit non-zero)
+  DUPLICATES (fatal: exit non-zero)
     - Two entries with the same `name`, compared case-insensitively.
     - Two entries with the same normalised `website` (scheme, "www.",
       and trailing slash stripped, compared case-insensitively).
 
-  FRESHNESS (warning — non-fatal)
+  FRESHNESS (warning: non-fatal)
     - Entries whose `last_verified` is more than 6 months old, or missing
       / unparseable. Printed oldest-first.
 
-  SLUG SANITY (warning — non-fatal)
+  SLUG SANITY (warning: non-fatal)
     - Entries whose filename doesn't match the slug you'd derive from
       their `name`, per the convention in CONTRIBUTING.md (lowercase,
       macrons dropped, everything else non-alphanumeric collapsed to a
@@ -74,7 +74,7 @@ def load_entries():
             with open(path, encoding="utf-8") as f:
                 entry = yaml.safe_load(f)
         except yaml.YAMLError as e:
-            print(f"WARN  {path.name}: could not parse YAML — {e} (skipped)")
+            print(f"WARN  {path.name}: could not parse YAML ({e}), skipped")
             continue
         if not isinstance(entry, dict):
             print(f"WARN  {path.name}: not a YAML mapping (skipped)")
@@ -166,7 +166,7 @@ def check_slugs(entries):
 
     print(f"WARN  {len(mismatches)} filename/slug mismatches:")
     for filename, name, expected in mismatches:
-        print(f"      - {filename}  ({name!r}) — expected slug: {expected}.yaml")
+        print(f"      - {filename}  ({name!r}), expected slug: {expected}.yaml")
 
 
 def main():
@@ -195,7 +195,7 @@ def main():
     print()
 
     if dup_found:
-        print("RESULT: FAIL — duplicate entries found (see above)")
+        print("RESULT: FAIL, duplicate entries found (see above)")
         return 1
 
     print("RESULT: pass (warnings above, if any, are non-fatal)")

@@ -28,7 +28,7 @@ try:
     import jsonschema
 except ImportError:  # pragma: no cover - needs jsonschema missing to trigger
     print(
-        "WARNING: jsonschema is not installed — falling back to a basic "
+        "WARNING: jsonschema is not installed: falling back to a basic "
         "required-fields check only. Run: pip install jsonschema for full "
         "schema validation."
     )
@@ -109,7 +109,7 @@ def main():
             with open(path, encoding="utf-8") as f:
                 entry = yaml.safe_load(f)
         except yaml.YAMLError as e:
-            print(f"FAIL  {path.name}: invalid YAML — {e}")
+            print(f"FAIL  {path.name}: invalid YAML: {e}")
             total_fail += 1
             continue
 
@@ -142,7 +142,7 @@ def main():
         print(f"FAIL  duplicate name '{name}' used in: {', '.join(paths)}")
 
     # A slug is a path.stem drawn from files that all matched glob("*.yaml"),
-    # so two distinct filenames can never produce the same stem — this branch
+    # so two distinct filenames can never produce the same stem: this branch
     # is unreachable in practice and kept only as a defensive guard.
     for slug, paths in find_duplicates(slugs_seen).items():  # pragma: no cover
         dup_found = True

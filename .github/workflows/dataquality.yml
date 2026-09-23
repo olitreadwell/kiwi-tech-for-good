@@ -94,7 +94,7 @@ jobs:
                       m = re.match(r"^\s*-\s+(\S+)\s+(\S+\.yaml)\s+\((.*)\)\s*$", line)
                       if m:
                           when, filename, name = m.groups()
-                          stale.append(f"- `{when}` — `{filename}` ({name})")
+                          stale.append(f"- `{when}`: `{filename}` ({name})")
 
               now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
               if stale:
@@ -140,7 +140,7 @@ jobs:
                       if issue["state"] == "OPEN":
                           res = sh(
                               "gh", "issue", "close", str(issue["number"]),
-                              "--comment", f"No stale entries as of {now} — closing.",
+                              "--comment", f"No stale entries as of {now}: closing.",
                           )
                           if res.returncode != 0:
                               raise RuntimeError(f"gh issue close failed: {res.stderr.strip()}")

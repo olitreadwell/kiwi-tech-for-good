@@ -2,9 +2,9 @@
 """Export data/entries/*.yaml as machine-readable JSON and CSV.
 
 Reads every YAML file in data/entries/ and writes:
-  - data/exports/entries.json — the full entry list, one JSON object per
+  - data/exports/entries.json: the full entry list, one JSON object per
     entry, sorted by name.
-  - data/exports/entries.csv — the same data flattened to columns, with
+  - data/exports/entries.csv: the same data flattened to columns, with
     list fields (tags, related_to, linkedin_people) joined into a single
     cell.
 

@@ -282,7 +282,7 @@ def render_guide(
         noun = "entry" if n == 1 else "entries"
         lines.append(f'    {domain_ids[d]}["{label}<br/>({n} {noun})"]')
     # domain_edge_counts is already keyed by tuple(sorted((da, db))), so this
-    # dedup can never actually skip a pair — kept as a defensive guard in
+    # dedup can never actually skip a pair: kept as a defensive guard in
     # case that invariant ever changes.
     seen_domain_edges = set()
     for (da, db), count in sorted(domain_edge_counts.items()):

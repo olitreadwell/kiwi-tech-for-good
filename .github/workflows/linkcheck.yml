@@ -8,7 +8,7 @@ name: Weekly link check
 
 on:
   schedule:
-    # Mondays 06:00 UTC — Monday evening in New Zealand.
+    # Mondays 06:00 UTC: Monday evening in New Zealand.
     - cron: "0 6 * * 1"
   workflow_dispatch:
 
@@ -64,7 +64,7 @@ jobs:
           {
             echo "The weekly link check found one or more genuinely dead links in \`data/entries/\`."
             echo ""
-            echo "Bot-blocked responses (403 / 999, common for LinkedIn) are not counted here — only 404s, DNS failures, and refused connections."
+            echo "Bot-blocked responses (403 / 999, common for LinkedIn) are not counted here: only 404s, DNS failures, and refused connections."
             echo ""
             echo "Reproduce locally:"
             echo ""
@@ -83,7 +83,7 @@ jobs:
           existing=$(gh issue list --label link-check --state open --json number -q '.[0].number' 2>/dev/null || true)
           if [ -n "${existing:-}" ]; then
             gh issue edit "$existing" --body-file issue-body.md
-            gh issue comment "$existing" --body "Re-checked on $(date -u +%Y-%m-%d) — dead links still present. Report in the issue body above (run ${{ github.run_id }})."
+            gh issue comment "$existing" --body "Re-checked on $(date -u +%Y-%m-%d): dead links still present. Report in the issue body above (run ${{ github.run_id }})."
           else
             gh issue create \
               --title "Dead links found by weekly link check" \
@@ -97,7 +97,7 @@ jobs:
           set -euo pipefail
           existing=$(gh issue list --label link-check --state open --json number -q '.[0].number' 2>/dev/null || true)
           if [ -n "${existing:-}" ]; then
-            gh issue comment "$existing" --body "Link check passed on $(date -u +%Y-%m-%d) — no dead links remain. Closing automatically."
+            gh issue comment "$existing" --body "Link check passed on $(date -u +%Y-%m-%d): no dead links remain. Closing automatically."
             gh issue close "$existing"
           fi
 
@@ -115,5 +115,5 @@ jobs:
           created_epoch=$(date -u -d "$created" +%s 2>/dev/null || date -u -jf "%Y-%m-%dT%H:%M:%SZ" "$created" +%s)
           four_weeks_ago=$(date -u -d "-4 weeks" +%s 2>/dev/null || date -u -v-4w +%s)
           if [ "$created_epoch" -lt "$four_weeks_ago" ]; then
-            gh issue comment "$number" --body "This issue has been open for over 4 weeks with unresolved dead links. These links may be permanently dead — consider removing or updating the affected entries."
+            gh issue comment "$number" --body "This issue has been open for over 4 weeks with unresolved dead links. These links may be permanently dead: consider removing or updating the affected entries."
           fi

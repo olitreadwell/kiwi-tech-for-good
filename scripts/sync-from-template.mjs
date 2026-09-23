@@ -163,7 +163,7 @@ async function main() {
     const base = defaultBranch();
     console.log(`\ntarget: ${repoDir} (base: ${base})`);
     if (changes.length === 0) {
-      console.log('in sync — nothing to do');
+      console.log('in sync: nothing to do');
       return;
     }
     for (const c of changes) console.log(`  ${c.action.padEnd(6)} ${c.rel}`);

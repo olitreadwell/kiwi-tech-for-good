@@ -6,7 +6,7 @@ since it handles redirects, concurrency, and rate limits well. Falls back
 to a plain urllib HEAD/GET check if lychee isn't installed.
 
 Reports genuinely dead links (404, DNS failure, connection refused)
-separately from bot-blocked links (403, 999 — LinkedIn does this a lot).
+separately from bot-blocked links (403, 999; LinkedIn does this a lot).
 Only exits non-zero for genuine deaths, since bot-blocks are expected
 and not actionable.
 
@@ -81,7 +81,7 @@ def run_lychee(urls):
 
         # lychee's JSON report keys error_map by the *input source*
         # (our temp file path here), with a list of per-URL failures under
-        # it — not by URL directly. Flatten across all sources to be safe
+        # it: not by URL directly. Flatten across all sources to be safe
         # regardless of how lychee was invoked.
         for items in data.get("error_map", {}).values():
             for item in items:
@@ -156,7 +156,7 @@ def main():
 
     print()
     if bot_blocked:
-        print(f"Bot-blocked or non-404 responses ({len(bot_blocked)}) — not treated as failures:")
+        print(f"Bot-blocked or non-404 responses ({len(bot_blocked)}): not treated as failures:")
         for url, code in bot_blocked:
             refs = ", ".join(f"{n} ({f})" for n, f in find_refs(url, urls))
             print(f"  [{code}] {url}  <- {refs}")
