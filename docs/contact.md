@@ -23,7 +23,7 @@ Every submission must pass three gates before it is processed:
 1. **Proof of work.** `GET /api/challenge` returns
    `{ challengeId, noncePrefix, difficulty }`. The client finds a `nonce`
    such that `sha256(noncePrefix + nonce)` hex starts with `difficulty`
-   zeros (default 4, about 65k hashes — milliseconds for a browser, seconds
+   zeros (default 4, about 65k hashes: milliseconds for a browser, seconds
    of wasted effort per spam attempt). Challenges expire after 5 minutes
    and are single-use.
 2. **Rate limit.** Per-IP fixed window, default 10 submissions/hour
@@ -61,8 +61,8 @@ When disabled, the form still validates and explains where to go instead.
 The feedback path is deliberately AI-readable so agents can file issues the
 same way humans do:
 
-1. `GET /.well-known/feedback.json` — discover endpoints and the PoW spec.
-2. `GET /api/challenge` — obtain `{ challengeId, noncePrefix, difficulty }`.
+1. `GET /.well-known/feedback.json`: discover endpoints and the PoW spec.
+2. `GET /api/challenge`: obtain `{ challengeId, noncePrefix, difficulty }`.
 3. Compute `nonce` by brute force (SHA-256, leading zeros).
 4. `POST /api/feedback` with the form fields plus `challengeId` and `nonce`.
 

@@ -8,11 +8,11 @@ so the quality gates and docs never drift. It never touches app code.
 Policies live in `template-manifest.json` (in the template repo, so they can
 evolve with the template):
 
-- `copy` — replaced verbatim: lint/format/CI configs, a11y + audit docs,
+- `copy`: replaced verbatim: lint/format/CI configs, a11y + audit docs,
   issue templates, security checks.
-- `copyIfAbsent` — added only when missing: `AGENTS.md`, `CLAUDE.md`,
+- `copyIfAbsent`: added only when missing: `AGENTS.md`, `CLAUDE.md`,
   `.nvmrc`, `.env.example`, contact/FAQ docs, the weekly sync workflow.
-- `merge` — `package.json`: union of `scripts` only, local values winning on
+- `merge`: `package.json`: union of `scripts` only, local values winning on
   conflict. `dependencies` and `devDependencies` always stay local: the
   template's app deps (Radix, next, nodemailer, …) and tooling majors (vitest,
   playwright, …) are opt-in per repo, never forced by a sync. A sync must
@@ -41,10 +41,10 @@ it the workflow uses `GITHUB_TOKEN` and only works for public templates.
 ## Adopting on an existing repo
 
 1. `gh repo clone <repo>` and run the dry-run above.
-2. Run with `--apply --push` — this adds the sync script, manifest,
+2. Run with `--apply --push`: this adds the sync script, manifest,
    workflow, and configs, and opens the first PR.
 3. After merge, the repo is on the weekly cadence.
 
 Run `pnpm install` after a merge that touched `package.json` (the PR
-includes `pnpm-lock.yaml` updates only if the lockfile policy allows it —
+includes `pnpm-lock.yaml` updates only if the lockfile policy allows it : 
 regenerate locally and commit when required).

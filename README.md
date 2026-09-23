@@ -15,6 +15,7 @@ people who use technology for public good.
 - [Add an organisation / contribute](#add-an-organisation--contribute)
 - [Use the data](#use-the-data)
 - [How it's maintained](#how-its-maintained)
+- [Get involved](#get-involved)
 - [Related directories & further reading](#related-directories--further-reading)
 - [For developers](#for-developers)
 
@@ -142,6 +143,28 @@ same data flattened to columns), both regenerated from `data/entries/` by
   not currently list any named people: see
   [docs/known-gaps.md](docs/known-gaps.md) for why, and how to help close
   that gap.
+
+## Get involved
+
+This directory answers what exists. These routes answer what to do next,
+each one checked on 2026-09-23:
+
+- **[Digital Aotearoa Collective](https://digitalaotearoa.github.io/chat)**:
+  an open Slack for people building public-good technology in Aotearoa. The
+  join link takes you straight in.
+- **[Tech for Good New Zealand](https://www.meetup.com/tech-for-good-new-zealand/)**:
+  an Auckland meetup group in the NetSquared network, with free events for
+  charities, community groups, and tech people.
+- **[Civic Tech Field Guide](https://civictech.guide)**: projects,
+  organisations, and community channels worldwide, including a directory of
+  Slacks, Discords, and Teams with open join links.
+- **[Catchafire](https://www.catchafire.org)**: a skilled volunteering
+  marketplace where nonprofits post short projects and professionals pick
+  one up.
+
+[`docs/research-get-involved.md`](docs/research-get-involved.md) has the
+full comparison of how these sites onboard newcomers, and the backlog for
+bringing the same routes into this directory.
 
 ## Related directories & further reading
 
