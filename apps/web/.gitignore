@@ -1,1 +1,13 @@
 .vercel
+
+# Next 16 writes these into the app directory on every `next dev` and
+# `next build` (see node_modules/next/dist/server/lib/generate-agent-files.js),
+# so they are generated output rather than source. Keeping them untracked and
+# ignored is what stops them dirtying the tree. next-env.d.ts, written by the
+# same code path, is covered by the root .gitignore.
+AGENTS.md
+CLAUDE.md
+
+# Playwright output from `npm run test:e2e`.
+playwright-report/
+test-results/
