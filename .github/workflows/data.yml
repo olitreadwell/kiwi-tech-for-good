@@ -1,0 +1,47 @@
+name: Data and prose
+
+# The Python gate: entries against the schema, prose against the style
+# rules, the test suite, and the generated files in sync with data/.
+# The Node jobs in ci.yml cover the app and never touch these files.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: data-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Validate, style, and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Validate entries against the schema
+        run: python3 scripts/validate.py
+      - name: Check prose against the style rules
+        run: python3 scripts/stylecheck.py
+      - name: Run the test suite
+        run: python3 -m pytest -q
+      - name: Regenerate the guide and the exports
+        run: |
+          python3 scripts/build_guide.py
+          python3 scripts/export.py
+      - name: Fail when the generated files are out of date
+        run: git diff --exit-code
