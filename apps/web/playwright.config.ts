@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3000/nz-tech-for-good",
+    baseURL: "http://localhost:3000/kiwi-tech-for-good",
     trace: "on-first-retry",
   },
   projects: [

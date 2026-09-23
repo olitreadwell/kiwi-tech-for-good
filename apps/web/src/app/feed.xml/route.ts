@@ -6,7 +6,7 @@ export async function GET() {
     .filter((e) => e.last_verified)
     .sort((a, b) => b.last_verified.localeCompare(a.last_verified))
     .slice(0, 20);
-  const base = 'https://nz-tech-for-good.vercel.app';
+  const base = 'https://olitreadwell.github.io/kiwi-tech-for-good';
 
   const items = newest
     .map(
