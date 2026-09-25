@@ -7,9 +7,12 @@
 //   - github-actions: auto-merge any non-major version
 //   - security advisory PRs: auto-merge regardless of version or release age
 //   - an on-hold label always blocks auto-merge
-//   - any failing or still-running check blocks auto-merge, because most of
-//     these repos have no branch protection, so `gh pr merge --auto` would
-//     otherwise merge immediately rather than waiting on CI
+//   - a check that is failing does block auto-merge, because most of these
+//     repos now require a pull request but not a green one, so `gh pr merge
+//     --auto` would otherwise merge the moment it is enabled. Two kinds of
+//     failure are exempt, because neither says anything about the bump:
+//     jobs that never started because the account's Actions minutes ran out,
+//     and checks that are already red on the base branch before the PR
 //
 // Runs from the base branch's checkout via pull_request_target, so only
 // trusted code (this repo's own script) executes.
@@ -160,25 +163,85 @@ export function dependencyTypeOf(name, body) {
   return "production";
 }
 
-// GitHub only blocks an auto-merge when branch protection requires a check.
-// Most of these repos have no protection, so without this gate `--auto` merges
-// the moment it is enabled. Returns null when the rollup is acceptable.
+// A job that never started because the account is out of Actions minutes says
+// nothing about the dependency bump, and no dependency change can fix it.
+const BILLING_MARKER = "recent account payments have failed";
+const FAILED_CONCLUSIONS = ["FAILURE", "CANCELLED", "TIMED_OUT", "STARTUP_FAILURE", "ACTION_REQUIRED"];
+
+export function repoSlug(prUrl) {
+  if (process.env.GITHUB_REPOSITORY) return process.env.GITHUB_REPOSITORY;
+  const m = /github\.com\/([^/]+\/[^/]+)\/pull\//.exec(prUrl ?? "");
+  return m ? m[1] : null;
+}
+
+function jobIdOf(detailsUrl) {
+  const m = /\/job\/(\d+)/.exec(detailsUrl ?? "");
+  return m ? m[1] : null;
+}
+
+export function billingOnlyFailure(repo, check) {
+  const jobId = jobIdOf(check.detailsUrl);
+  if (!repo || !jobId) return false;
+  try {
+    const lines = gh(`api repos/${repo}/check-runs/${jobId}/annotations --jq '.[].message'`)
+      .split("\n").map((line) => line.trim()).filter(Boolean);
+    return lines.length > 0 && lines.every((line) => line.includes(BILLING_MARKER));
+  } catch {
+    return false;
+  }
+}
+
+// A check that is already red on the base branch is not evidence against this
+// PR. Without this, one chronically broken job holds every bot PR open forever.
+function failingOnBaseBranch(repo, branch) {
+  const red = new Set();
+  try {
+    const runs = JSON.parse(gh(`api repos/${repo}/commits/${branch}/check-runs?filter=latest&per_page=100`)).check_runs ?? [];
+    for (const run of runs) if (run.conclusion === "failure") red.add(run.name);
+  } catch {
+    return red;
+  }
+  return red;
+}
+
+// GitHub only blocks an auto-merge when branch protection requires the check.
+// Returns null when the rollup is good enough to merge on.
 export function blockingCheck(prUrl) {
   let rollup = [];
+  let baseBranch = null;
   try {
-    rollup = JSON.parse(gh(`pr view ${prUrl} --json statusCheckRollup`)).statusCheckRollup ?? [];
+    const info = JSON.parse(gh(`pr view ${prUrl} --json statusCheckRollup,baseRefName`));
+    rollup = info.statusCheckRollup ?? [];
+    baseBranch = info.baseRefName ?? null;
   } catch {
     return "could not read check status";
   }
-  const failed = ["FAILURE", "CANCELLED", "TIMED_OUT", "STARTUP_FAILURE", "ACTION_REQUIRED"];
-  const bad = rollup.filter((c) => failed.includes(c.conclusion));
-  if (bad.length > 0) return `failing checks: ${bad.map((c) => c.name).join(", ")}`;
-  const pending = rollup.filter((c) => c.status !== "COMPLETED");
-  if (pending.length > 0) return `checks still running: ${pending.map((c) => c.name).join(", ")}`;
+  const repo = repoSlug(prUrl);
+  const failed = rollup.filter((c) => FAILED_CONCLUSIONS.includes(c.conclusion));
+  const billing = failed.filter((c) => billingOnlyFailure(repo, c));
+  const baseRed = repo && baseBranch && failed.length > billing.length ? failingOnBaseBranch(repo, baseBranch) : new Set();
+  const real = failed.filter((c) => !billing.includes(c) && !baseRed.has(c.name));
+  if (real.length > 0) {
+    return `failing checks: ${real.map((c) => c.name).join(", ")}`;
+  }
+  // Once the account is billing-blocked, queued jobs never start either, so a
+  // job that never started carries no signal while that lasts.
+  const billingBlocked = billing.length > 0;
+  const pending = rollup.filter(
+    (c) => c.status !== "COMPLETED" && (billingBlocked ? Boolean(c.startedAt) : true),
+  );
+  if (pending.length > 0) {
+    return `checks still running: ${pending.map((c) => c.name).join(", ")}`;
+  }
+  const ignored = billing.length + failed.filter((c) => baseRed.has(c.name)).length;
+  if (ignored > 0) {
+    console.log(`dependabot-auto-merge: ignoring ${ignored} check(s) that never ran or were already red on ${baseBranch}`);
+  }
   return null;
 }
 
 async function releaseDateFor(name, version, ecosystem) {
+
   if (ecosystem === "pip") return pypiReleaseDate(name, version);
   if (ecosystem === "actions") return githubReleaseDate(name, version);
   return npmReleaseDate(name, version);
