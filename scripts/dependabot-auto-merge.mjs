@@ -7,14 +7,19 @@
 //   - github-actions: auto-merge any non-major version
 //   - security advisory PRs: auto-merge regardless of version or release age
 //   - an on-hold label always blocks auto-merge
+//   - any failing or still-running check blocks auto-merge, because most of
+//     these repos have no branch protection, so `gh pr merge --auto` would
+//     otherwise merge immediately rather than waiting on CI
 //
 // Runs from the base branch's checkout via pull_request_target, so only
 // trusted code (this repo's own script) executes.
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const MIN_AGE_DAYS = Number(process.env.MIN_AGE_DAYS ?? 3);
+// Set REQUIRE_GREEN_CHECKS=false only where branch protection already waits on CI.
+const requireGreenChecks = () => (process.env.REQUIRE_GREEN_CHECKS ?? "true") !== "false";
 const prUrl = process.argv[2];
 const dryRun = !!process.env.PR_DRY_RUN;
 
@@ -108,6 +113,31 @@ export async function githubReleaseDate(name, version) {
   return null;
 }
 
+// Every package.json in the checkout, so workspaces and nested apps are covered
+// without hardcoding this one repo's layout.
+export function packageJsonPaths() {
+  const found = [];
+  const roots = [".", "apps", "packages", "web", "client", "server", "src"];
+  for (const root of roots) {
+    const dir = join(process.cwd(), root);
+    const rootManifest = join(root, "package.json").replace(/^\.\//, "");
+    if (!existsSync(join(dir, "package.json"))) continue;
+    found.push(rootManifest);
+    if (root === "." || root === "apps" || root === "packages") {
+      try {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          if (!entry.isDirectory() || entry.name === "node_modules") continue;
+          const nested = join(root, entry.name, "package.json").replace(/^\.\//, "");
+          if (existsSync(join(process.cwd(), nested))) found.push(nested);
+        }
+      } catch {
+        // unreadable directory: treat as no nested manifest
+      }
+    }
+  }
+  return [...new Set(found)];
+}
+
 export function dependencyTypeOf(name, body) {
   const group = body.match(/the (production|development)-(?:patch|minor) group/);
   if (group) return group[1];
@@ -116,7 +146,7 @@ export function dependencyTypeOf(name, body) {
   if (head.includes("Updates the requirements") || head.includes("Updates:")) {
     return readFileSafe("requirements-dev.txt", "").includes(name) ? "development" : "production";
   }
-  for (const manifest of ["package.json", "apps/web/package.json", "packages/ui/package.json"]) {
+  for (const manifest of packageJsonPaths()) {
     const raw = readFileSafe(manifest, "");
     if (!raw) continue;
     try {
@@ -128,6 +158,24 @@ export function dependencyTypeOf(name, body) {
     }
   }
   return "production";
+}
+
+// GitHub only blocks an auto-merge when branch protection requires a check.
+// Most of these repos have no protection, so without this gate `--auto` merges
+// the moment it is enabled. Returns null when the rollup is acceptable.
+export function blockingCheck(prUrl) {
+  let rollup = [];
+  try {
+    rollup = JSON.parse(gh(`pr view ${prUrl} --json statusCheckRollup`)).statusCheckRollup ?? [];
+  } catch {
+    return "could not read check status";
+  }
+  const failed = ["FAILURE", "CANCELLED", "TIMED_OUT", "STARTUP_FAILURE", "ACTION_REQUIRED"];
+  const bad = rollup.filter((c) => failed.includes(c.conclusion));
+  if (bad.length > 0) return `failing checks: ${bad.map((c) => c.name).join(", ")}`;
+  const pending = rollup.filter((c) => c.status !== "COMPLETED");
+  if (pending.length > 0) return `checks still running: ${pending.map((c) => c.name).join(", ")}`;
+  return null;
 }
 
 async function releaseDateFor(name, version, ecosystem) {
@@ -183,6 +231,14 @@ async function main() {
   if (!mature) {
     allow = false;
     console.log(`dependabot-auto-merge: youngest release ${youngest === null ? "unknown" : youngest.toFixed(1) + " days"} old, need ${MIN_AGE_DAYS}; waiting`);
+  }
+
+  if (allow && requireGreenChecks()) {
+    const blocker = blockingCheck(prUrl);
+    if (blocker) {
+      allow = false;
+      console.log(`dependabot-auto-merge: waiting, ${blocker}`);
+    }
   }
 
   if (allow) {
