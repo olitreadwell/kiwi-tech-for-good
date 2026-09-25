@@ -5,7 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
 // answering there, which would test the wrong app. E2E_PORT moves the port for
 // callers that need a different one.
 const e2ePort = process.env.E2E_PORT ?? "3301";
-const e2eBaseUrl = `http://localhost:${e2ePort}`;
+const e2eBaseUrl = `http://localhost:${e2ePort}/kiwi-tech-for-good`;
 
 export default defineConfig({
   testDir: "./e2e",
