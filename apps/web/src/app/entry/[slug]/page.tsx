@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { getAllEntries } from '@/lib/data';
+import { domainSlug } from '@/lib/domain-slug';
 import { buildEntryFeedbackUrl } from '@/lib/feedback';
 
 export default async function EntryPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -158,7 +159,7 @@ export default async function EntryPage({ params }: { params: Promise<{ slug: st
         <dt className="font-semibold text-text-muted">Domain</dt>
         <dd>
           <Link
-            href={`/domains/${entry.domain.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+            href={`/domains/${domainSlug(entry.domain)}`}
             className="text-brand hover:underline"
           >
             {entry.domainLabel}

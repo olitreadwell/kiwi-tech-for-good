@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { buildEntryFeedbackUrl } from '@/lib/feedback';
+import { domainSlug } from '@/lib/domain-slug';
 
 interface EntryCardProps {
   slug: string;
@@ -65,6 +66,7 @@ function MetaIcon({
 export function EntryCard({
   slug,
   name,
+  domain,
   domainLabel,
   what,
   region,
@@ -82,7 +84,7 @@ export function EntryCard({
     <li className="rounded-lg border border-border bg-surface p-4 transition-shadow hover:shadow-md">
       <div className="mb-2 flex items-center gap-2">
         <Link
-          href={`/domains/${domainLabel.toLowerCase().replace(/\s+/g, '-')}`}
+          href={`/domains/${domainSlug(domain)}`}
           className="rounded-full bg-brand-soft px-2 py-0.5 text-center text-xs font-medium text-brand"
         >
           {domainLabel}

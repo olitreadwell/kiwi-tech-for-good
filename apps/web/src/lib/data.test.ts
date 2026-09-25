@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getAllEntries, getDomains, getRegions } from '@/lib/data';
+import { domainSlug } from '@/lib/domain-slug';
 
 describe('data loader', () => {
   it('loads all entries as an array', () => {
@@ -85,6 +86,17 @@ describe('data loader', () => {
     const domains = getDomains();
     for (const d of domains) {
       expect(d.label.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('links to a domain page that the export actually writes', () => {
+    // `Housing & homelessness tech` is the case that broke: slugging the label
+    // keeps the `&`, while the page is exported under the slug of the key.
+    expect(domainSlug('housing / homelessness tech')).toBe('housing-homelessness-tech');
+
+    const slugs = new Set(getDomains().map((d) => d.slug));
+    for (const domain of getDomains()) {
+      expect(slugs.has(domainSlug(domain.key))).toBe(true);
     }
   });
 });

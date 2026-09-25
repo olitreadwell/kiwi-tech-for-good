@@ -102,6 +102,8 @@ export function getAllEntries(): Entry[] {
   return entries;
 }
 
+import { domainSlug } from '@/lib/domain-slug';
+
 export function getDomains() {
   const counts = new Map<string, number>();
   for (const e of getAllEntries()) {
@@ -111,7 +113,7 @@ export function getDomains() {
     .map(([key, count]) => ({
       key,
       label: domainLabel(key),
-      slug: key.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      slug: domainSlug(key),
       count,
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
