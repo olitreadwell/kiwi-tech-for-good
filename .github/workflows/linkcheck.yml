@@ -41,10 +41,11 @@ jobs:
       - name: Install lychee
         run: |
           set -euo pipefail
-          url="https://github.com/lycheeverse/lychee/releases/download/lychee-${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz"
+          asset="lychee-x86_64-unknown-linux-gnu"
+          url="https://github.com/lycheeverse/lychee/releases/download/lychee-${LYCHEE_VERSION}/${asset}.tar.gz"
           curl -fsSL "$url" -o lychee.tar.gz
           tar -xzf lychee.tar.gz
-          sudo mv lychee /usr/local/bin/lychee
+          sudo mv "${asset}/lychee" /usr/local/bin/lychee
           lychee --version
 
       - name: Run link check
