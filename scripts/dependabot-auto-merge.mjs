@@ -231,7 +231,10 @@ export function billingOnlyFailure(repo, check) {
       .split('\n')
       .map((line) => line.trim())
       .filter(Boolean);
-    return lines.length > 0 && lines.every((line) => line.includes(BILLING_MARKER));
+    // Any annotation carrying the marker is decisive. Requiring every
+    // annotation to carry it made the exemption fail, because a runner image
+    // notice is posted alongside the billing message.
+    return lines.some((line) => line.includes(BILLING_MARKER));
   } catch {
     return false;
   }
