@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**", "out/**"] },
     "dev": { "cache": false, "persistent": true },
     "lint": {},
     "format": {},
