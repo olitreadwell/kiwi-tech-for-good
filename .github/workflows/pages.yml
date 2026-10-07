@@ -42,7 +42,7 @@ jobs:
       - run: npm run build
       # Pages serves files starting with an underscore only when Jekyll is off.
       - run: touch apps/web/out/.nojekyll
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/web/out
